@@ -3,7 +3,7 @@ import numpy as np
 from src.utils import mutation, crossover_partie, crossover_uniforme
 
 class AlgorithmeGenetique:
-    def __init__(self, evaluator, population_size=50, generations=50, use_elitism = True, use_stallion = True, use_losers = True, use_reseed = True, elite_size = 2, loser_rate = 0.1, stagnation_limit = 5):
+    def __init__(self, evaluator, population_size=50, generations=50, use_elitism = True, use_stallion = True, use_losers = True, use_reseed = True, elite_size = 2, loser_rate = 0.1, stagnation_limit = 5, crossover_method = "uniforme"):
         self.evaluator = evaluator
         self.population_size = population_size
         self.generations = generations
@@ -19,6 +19,9 @@ class AlgorithmeGenetique:
         self.elite_size = elite_size
         self.loser_rate = loser_rate
         self.stagnation_limit = stagnation_limit
+
+        # Choix de la méthode de crossover
+        self.crossover_method = crossover_method
 
     def initialiser_population(self):
         # Génère une population initiale de mots aléatoires.
@@ -44,8 +47,14 @@ class AlgorithmeGenetique:
 
         return population
 
-    
 
+    def crossover(self, mot1, mot2):
+        if self.crossover_method == "partie":
+            return crossover_partie(mot1, mot2)
+        elif self.crossover_method == "uniforme":
+            return crossover_uniforme(mot1, mot2)
+        else:
+            raise ValueError("Méthode de crossover inconnue")
 
     # Boucle principale de l'algorithme génétique
     def run(self):
@@ -118,7 +127,7 @@ class AlgorithmeGenetique:
                 
                 parent2 = random.choice(selection)
                 # parent1, parent2 = random.sample(selection, 2)
-                enfant = crossover_uniforme(parent1, parent2)  # Crossover uniforme
+                enfant = self.crossover(parent1, parent2)  # Crossover uniforme
                 enfant = mutation(enfant)  # Mutation
                 new_population.append(enfant)
 
