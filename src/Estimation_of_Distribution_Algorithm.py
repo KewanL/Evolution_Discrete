@@ -14,6 +14,7 @@ class EstimationDistributionAlgorithm:
         self.history_mean = []
         self.longueur_mot = longueur_mot
         self.selection_rate = selection_rate
+        self.all_words = [] # Pour stocker tous les mots générés pendant les différentes générations
 
     def initialiser_population(self):
         # Génère une population initiale de mots aléatoires.
@@ -26,7 +27,7 @@ class EstimationDistributionAlgorithm:
 
     def calcul_proba(self, population):
         proba = np.zeros((self.longueur_mot, len(self.alphabet)))
-
+        # epsilon = 0.05 # Bruit pour éviter toujours les mêmes lettres
         for mot in population : 
             mot = mot + "#" * (self.longueur_mot - len(mot))  # On applique un padding pour que les mots aient la même longueur
 
@@ -41,13 +42,11 @@ class EstimationDistributionAlgorithm:
         
         # Normalisation des probabilités
         for i in range(self.longueur_mot):
-            total = 0 
-            for j in range(len(self.alphabet)):
-                total += proba[i][j]
-
-            if total > 0 : 
-                for g in range(len(self.alphabet)):
-                    proba[i][g] /= total
+            total = np.sum(proba[i])
+            if total > 0:
+                proba[i] /= total
+            
+            proba[i] = 0.9 * proba[i] +0.1 / len(self.alphabet) # On ajoute un peu de bruit pour éviter de toujours choisir les mêmes lettres
         return proba
 
 
@@ -73,14 +72,14 @@ class EstimationDistributionAlgorithm:
                 #Évaluation
                 score = self.evaluator.evaluer(mot) # On évalue le mot
                 scores.append(score) # On ajoute le score à la liste des scores
-
+            self.all_words.extend(population) # On ajoute les mots de la population à la liste globale
             best_score = min(scores) # On trouve le meilleur score
             mean_score = np.mean(scores) # On calcule la moyenne des scores
 
             self.history_best.append(best_score) # On ajoute le meilleur score à l'historique
             self.history_mean.append(mean_score) # On ajoute la moyenne des scores à l'historique
 
-            print(f"Generation {generation+1} : Best = {best_score:.2f}, Mean = {mean_score:.2f}")
+            # print(f"Generation {generation+1} : Best = {best_score:.2f}, Mean = {mean_score:.2f}")
 
             # Tri :
             sorted_population = [x for _, x in sorted(zip(scores, population))] 
@@ -95,5 +94,5 @@ class EstimationDistributionAlgorithm:
                 new_mot = self.generer_nouveaux_mots(proba) # Génération d'un nouveau mot
                 new_population.append(new_mot) # Ajout du nouveau mot à la nouvelle population
             population = new_population # Remplacement de l'ancienne population par la nouvelle population
-        return population
+        return self.all_words # On retourne tous les mots générés pendant les différentes générations
 

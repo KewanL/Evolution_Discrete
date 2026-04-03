@@ -3,13 +3,15 @@ import numpy as np
 from src.utils import mutation, crossover_partie, crossover_uniforme
 
 class AlgorithmeGenetique:
-    def __init__(self, evaluator, population_size=50, generations=50, use_elitism = True, use_stallion = True, use_losers = True, use_reseed = True, elite_size = 2, loser_rate = 0.1, stagnation_limit = 5, crossover_method = "uniforme"):
+    def __init__(self, evaluator, population_size=50, generations=50, mutation_rate=0.1, use_elitism = True, use_stallion = True, use_losers = True, use_reseed = True, elite_size = 2, loser_rate = 0.1, stagnation_limit = 5, crossover_method = "uniforme"):
         self.evaluator = evaluator
         self.population_size = population_size
         self.generations = generations
+        self.mutation_rate = mutation_rate
         self.alphabet = "abcdefghijklmnopqrstuvwxyz"
         self.history_best = []
         self.history_mean = []
+        self.all_words = [] # Pour stocker tous les mots générés pendant les différentes générations
 
         # Mécanismes de diversité
         self.use_elitism = use_elitism
@@ -69,7 +71,7 @@ class AlgorithmeGenetique:
 
             # évaluation de la population
             scores = [self.evaluator.evaluer(mot) for mot in population]
-
+            self.all_words.extend(population) # On ajoute les mots de la population à la liste globale
             # Trie 
             sorted_population = [x for _, x in sorted(zip(scores, population))]
             # best_individuals = self.meilleurs_individus(population, scores)
@@ -80,7 +82,7 @@ class AlgorithmeGenetique:
             self.history_best.append(best_score)
             self.history_mean.append(mean_score)
 
-            print(f"Generation {generation+1}: Best Score = {best_score}, Mean Score = {mean_score}")
+            # print(f"Generation {generation+1}: Best Score = {best_score}, Mean Score = {mean_score}")
 
             # Stagnation 
             if best_score < best_global:
@@ -128,9 +130,9 @@ class AlgorithmeGenetique:
                 parent2 = random.choice(selection)
                 # parent1, parent2 = random.sample(selection, 2)
                 enfant = self.crossover(parent1, parent2)  # Crossover uniforme
-                enfant = mutation(enfant)  # Mutation
+                enfant = mutation(enfant, mutation_rate = self.mutation_rate)  # Mutation
                 new_population.append(enfant)
 
             population = new_population
 
-        return population
+        return self.all_words # On retourne tous les mots générés pendant les différentes générations

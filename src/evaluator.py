@@ -9,9 +9,11 @@ class Evaluateur :
         self.min_len = 4
         self.max_len = 16
         self.max_repeat = 3
-        self.penalty_dict = 50.0
+        self.penalty_dict = 500.0
         self.penalty_length = 10.0
         self.penalty_repeat = 20.0
+        self.alphabet = "abcdefghijklmnopqrstuvwxyz" 
+        self.penalty_alphabet = 15.0 # Pénalité pour les mots contenant des caractères non alphabétiques
         self.calls = 0
 
     def evaluer(self, mot) :
@@ -29,13 +31,22 @@ class Evaluateur :
 
         # Longueur du mot
         # Pénalité si le mot est trop court ou trop long
-        if len(mot) < self.min_len or len(mot) > self.max_len:
-            penalty += self.penalty_length
+        if len(mot) < self.min_len :
+            penalty += self.penalty_length * (self.min_len - len(mot))
+        elif len(mot) > self.max_len :
+            penalty += self.penalty_length * (len(mot) - self.max_len)
 
         # Répétitions
         max_repetition = self._max_consecutive(mot)
         if max_repetition > self.max_repeat:
             penalty += self.penalty_repeat * (max_repetition - self.max_repeat)
+
+        # Caractères non alphabétiques
+        for char in mot:
+            if char not in self.alphabet:
+                penalty += self.penalty_alphabet
+                
+
 
         return perplexite + penalty
 

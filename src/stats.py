@@ -94,3 +94,37 @@ def plot_comparaison_monte_carlo(results_ga, results_eda):
     plt.grid()
     plt.show()
 
+
+def plot_histogramme(results, title="Distribution des scores"):
+    
+    plt.figure()
+    plt.hist(results, bins=20)
+    plt.title(title)
+    plt.xlabel("Fitness")
+    plt.ylabel("Fréquence")
+    plt.grid()
+    plt.show()
+
+
+def plot_boxplot_multiple(results_list, labels):
+
+    plt.figure()
+    plt.boxplot(results_list, labels=labels)
+    plt.title("Comparaison des distributions")
+    plt.ylabel("Fitness")
+    plt.grid()
+    plt.show()
+
+def plot_convergence_mean(histories, title="Convergence moyenne"):
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    mean_curve = np.mean(histories, axis=0)
+
+    plt.figure()
+    plt.plot(mean_curve)
+    plt.title(title)
+    plt.xlabel("Generation")
+    plt.ylabel("Fitness")
+    plt.grid()
+    plt.show()
