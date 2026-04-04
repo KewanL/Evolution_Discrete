@@ -2,8 +2,8 @@ from src.utils import model_et_dictionnaire
 from src.evaluator import Evaluateur
 from src.Algorithme_génétique import AlgorithmeGenetique
 from src.Estimation_of_Distribution_Algorithm import EstimationDistributionAlgorithm
-from src.stats import plot_best, plot_mean, plot_monte_carlo, plot_eda, plot_monte_carlo_eda, plot_comparaison, plot_comparaison_monte_carlo, plot_histogramme
-from src.monte_carlo import monte_carlo, monte_carlo_eda
+from src.stats import plot_best, plot_mean, plot_monte_carlo_ga, plot_eda, plot_monte_carlo_eda, plot_comparaison, plot_comparaison_monte_carlo, plot_histogramme, plot_convergence_statistique, plot_convergence_mean, plot_comparaison_convergence
+from src.monte_carlo import monte_carlo_ga, monte_carlo_eda
 import numpy as np
 import argparse
 from src.annexe import save_words_csv
@@ -40,6 +40,10 @@ def main():
     # ======================
     model, dictionary = model_et_dictionnaire()
     evaluator = Evaluateur(model, dictionary)
+    history_ga = None
+    history_eda = None
+    results_eda = None
+    results_ga = None
 
     # ======================
     # GA
@@ -48,7 +52,7 @@ def main():
 
         print("\n=== GA ===")
 
-        results_ga, words_ga = monte_carlo(
+        results_ga, words_ga, history_ga = monte_carlo_ga(
             evaluator,
             n_runs=args.n_runs,
             population_size=args.pop_size,
@@ -61,11 +65,11 @@ def main():
             use_reseed=bool(args.use_reseed)
         )
 
-        print("GA Mean:", np.mean(results_ga))
-        print("GA Std:", np.std(results_ga))
-
-        plot_monte_carlo(results_ga)
-        plot_histogramme(results_ga, "Distribution GA")
+        print(f"GA - Meilleur: {np.min(results_ga):.2f} | Médiane: {np.median(results_ga):.2f} | Std: {np.std(results_ga):.2f}")
+        
+        plot_convergence_statistique(history_ga, f"Profil de Convergence GA ({args.crossover})")
+        plot_monte_carlo_ga(results_ga)
+        
 
         save_words_csv(words_ga, evaluator, "words_ga.csv")
 
@@ -75,19 +79,19 @@ def main():
     if args.algo in ["eda", "all"]:
 
         print("\n=== EDA ===")
-
-        results_eda, words_eda = monte_carlo_eda(
+        evaluator.calls = 0
+        results_eda, words_eda, history_eda = monte_carlo_eda(
             evaluator,
             n_runs=args.n_runs,
             population_size=args.pop_size,
             generations=args.generations
         )
 
-        print("EDA Mean:", np.mean(results_eda))
-        print("EDA Std:", np.std(results_eda))
+        print(f"EDA - Meilleur: {np.min(results_eda):.2f} | Médiane: {np.median(results_eda):.2f} | Std: {np.std(results_eda):.2f}")
 
+        plot_convergence_statistique(history_eda, f"Profil de Convergence EDA ({args.crossover})")
         plot_monte_carlo_eda(results_eda)
-        plot_histogramme(results_eda, "Distribution EDA")
+        
 
         save_words_csv(words_eda, evaluator, "words_eda.csv")
 
@@ -95,7 +99,7 @@ def main():
     # COMPARAISON
     # ======================
     if args.algo == "all":
-        plot_comparaison_monte_carlo(results_ga, results_eda)
+        plot_comparaison_convergence(history_ga, history_eda)
 
 if __name__ == "__main__":
     main()

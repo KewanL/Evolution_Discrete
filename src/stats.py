@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 def plot_best(ga):
     plt.figure()
@@ -23,13 +24,12 @@ def plot_mean(ga):
     plt.grid()
     plt.show()
 
-def plot_monte_carlo(results):
-    import matplotlib.pyplot as plt
+def plot_monte_carlo_ga(results):
 
     plt.figure()
     plt.boxplot(results)
 
-    plt.title("Distribution des performances (Monte Carlo)")
+    plt.title("Distribution des performances (Monte Carlo) - GA")
     plt.ylabel("Best fitness")
 
     plt.grid()
@@ -55,7 +55,7 @@ def plot_monte_carlo_eda(results):
 
     plt.figure()
     plt.boxplot(results)
-    plt.title("Monte Carlo EDA")
+    plt.title("Distribution des performances (Monte Carlo) - EDA")
     plt.grid()
     plt.show()
 
@@ -116,8 +116,6 @@ def plot_boxplot_multiple(results_list, labels):
     plt.show()
 
 def plot_convergence_mean(histories, title="Convergence moyenne"):
-    import numpy as np
-    import matplotlib.pyplot as plt
 
     mean_curve = np.mean(histories, axis=0)
 
@@ -127,4 +125,40 @@ def plot_convergence_mean(histories, title="Convergence moyenne"):
     plt.xlabel("Generation")
     plt.ylabel("Fitness")
     plt.grid()
+    plt.show()
+
+def plot_convergence_statistique(histories, title="Profil de convergence (Monte-Carlo)"):
+    histories = np.array(histories)
+    # Calcul des statistiques par génération
+    median_curve = np.median(histories, axis=0)
+    q1 = np.percentile(histories, 25, axis=0)
+    q3 = np.percentile(histories, 75, axis=0)
+    plt.figure(figsize=(10, 6))
+    plt.fill_between(range(len(median_curve)), q1, q3, color='blue', alpha=0.2, label='Dispersion (Q1-Q3)')
+    plt.plot(median_curve, color='blue', lw=2, label='Médiane')
+    plt.title(title)
+    plt.xlabel("Générations (Appels approx. à la fct objective)")
+    plt.ylabel("Fitness (Perplexité + Pénalités)")
+    plt.legend()
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.show()
+
+
+def plot_comparaison_convergence(hist_ga, hist_eda):
+    plt.figure(figsize=(10, 6))
+    # Stats GA
+    m_ga = np.median(hist_ga, axis=0)
+    plt.plot(m_ga, label='GA (Médiane)', color='green')
+    plt.fill_between(range(len(m_ga)), np.percentile(hist_ga, 25, axis=0), np.percentile(hist_ga, 75, axis=0), color='green', alpha=0.15)
+    
+    # Stats EDA
+    m_eda = np.median(hist_eda, axis=0)
+    plt.plot(m_eda, label='EDA (Médiane)', color='orange')
+    plt.fill_between(range(len(m_eda)), np.percentile(hist_eda, 25, axis=0), np.percentile(hist_eda, 75, axis=0), color='orange', alpha=0.15)
+
+    plt.title("Comparaison des Profils de Convergence : GA vs EDA")
+    plt.xlabel("Générations")
+    plt.ylabel("Fitness")
+    plt.legend()
+    plt.grid(True)
     plt.show()
